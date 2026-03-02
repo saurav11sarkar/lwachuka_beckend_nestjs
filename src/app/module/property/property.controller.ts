@@ -28,7 +28,7 @@ export class PropertyController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthGuard('agent', 'seller', 'vendor', 'admin'))
+  @UseGuards(AuthGuard('agent', 'admin'))
   @UseInterceptors(FilesInterceptor('images', 10, fileUpload.uploadConfig))
   async createProperty(
     @Req() req: Request,
@@ -80,8 +80,42 @@ export class PropertyController {
     };
   }
 
+  @Get('subscriber-property-top')
+  @HttpCode(HttpStatus.OK)
+  async getAllSubscriberUserPropertyTop(@Req() req: Request) {
+    const filters = pick(req.query, [
+      'searchTerm',
+      'title',
+      'listingType',
+      'propertyType',
+      'kitchenType',
+      'location',
+      'finishes',
+      'balconyType',
+      'storage',
+      'coolingSystem',
+      'moveInStatus',
+      'description',
+      'propertyCommunityAmenities',
+      'purpose',
+      'referenceNumber',
+      'status',
+    ]);
+    const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
+    const result = await this.propertyService.getAllSubscriberUserPropertyTop(
+      filters,
+      options,
+    );
+
+    return {
+      message: 'Agent property retrieved successfully',
+      meta: result.meta,
+      data: result.data,
+    };
+  }
+
   @Get('my-property')
-  @UseGuards(AuthGuard('agent', 'vendor'))
+  @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
   async getMyPropertys(@Req() req: Request) {
     const filters = pick(req.query, [
@@ -181,7 +215,7 @@ export class PropertyController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('vendor', 'admin'))
+  @UseGuards(AuthGuard('agent', 'admin'))
   async updateProperty(
     @Req() req: Request,
     @Param('id') id: string,
@@ -202,7 +236,7 @@ export class PropertyController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('vendor', 'admin'))
+  @UseGuards(AuthGuard('agent', 'admin'))
   async deleteProperty(@Req() req: Request, @Param('id') id: string) {
     const userId = req.user!.id;
     const result = await this.propertyService.deleteProperty(userId, id);

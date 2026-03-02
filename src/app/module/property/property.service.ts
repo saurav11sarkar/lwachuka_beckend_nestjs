@@ -123,6 +123,83 @@ export class PropertyService {
     };
   }
 
+  async getAllSubscriberUserPropertyTop(
+    params: IFilterParams,
+    options: IOptions,
+  ) {
+    const { limit, page, skip, sortBy, sortOrder } = paginationHelper(options);
+
+    const { searchTerm, ...filterData } = params;
+
+    const andCondition: any[] = [];
+    const searchAbleFields = [
+      'title',
+      'listingType',
+      'propertyType',
+      'kitchenType',
+      'location',
+      'finishes',
+      'balconyType',
+      'storage',
+      'coolingSystem',
+      'moveInStatus',
+      'description',
+      'propertyCommunityAmenities',
+      'purpose',
+      'referenceNumber',
+      'status',
+    ];
+
+    if (searchTerm) {
+      andCondition.push({
+        $or: searchAbleFields.map((field) => ({
+          [field]: {
+            $regex: searchTerm,
+            $options: 'i',
+          },
+        })),
+      });
+    }
+
+    if (Object.keys(filterData).length > 0) {
+      andCondition.push({
+        $and: Object.entries(filterData).map(([key, value]) => ({
+          [key]: value,
+        })),
+      });
+    }
+
+    const whereConditions =
+      andCondition.length > 0 ? { $and: andCondition } : {};
+
+    const result = await this.propertyModel
+      .find(whereConditions)
+      // .sort({ [sortBy]: sortOrder } as any)
+      .skip(skip)
+      .limit(limit)
+      .populate('createBy');
+    const total = await this.propertyModel.countDocuments(whereConditions);
+
+    result.sort((a, b) => {
+      const aSub = (a.createBy as unknown as User)?.isSubscribed ? 1 : 0;
+      const bSub = (b.createBy as unknown as User)?.isSubscribed ? 1 : 0;
+      if (bSub - aSub !== 0) {
+        return bSub - aSub;
+      }
+      if (sortOrder === 'asc') return a[sortBy] - b[sortBy];
+      else return b[sortBy] - a[sortBy];
+    });
+
+    return {
+      data: result,
+      meta: {
+        page,
+        limit,
+        total,
+      },
+    };
+  }
+
   async getSingleProperty(id: string) {
     const property = await this.propertyModel.findById(id);
     if (!property) throw new HttpException('Property not found', 404);

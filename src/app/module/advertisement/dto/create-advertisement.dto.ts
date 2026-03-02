@@ -1,49 +1,52 @@
 import {
   IsString,
-  IsNotEmpty,
   IsOptional,
   IsArray,
-  IsNumber,
-  IsDateString,
-  IsUrl,
+  IsNumberString,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateAdvertisementDto {
   @IsString()
-  @IsNotEmpty()
   companyName: string;
 
   @IsString()
-  @IsNotEmpty()
   advertisementType: string;
 
-  @IsUrl()
-  @IsNotEmpty()
-  callToActionURL: string;
-
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  uploadMedia: string;
+  callToActionURL?: string;
 
+
+  @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  targetRegions: string[];
+  @Transform(({ value }) =>
+    value ? JSON.parse(value) : []
+  )
+  targetRegions?: string[];
 
+  @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  targetAudience: string[];
+  @Transform(({ value }) =>
+    value ? JSON.parse(value) : []
+  )
+  targetAudience?: string[];
 
-  @IsNumber()
-  campaignBudget: number;
-
+  @IsOptional()
   @IsString()
-  campaignDuration: string;
+  compaingBudget?: string;
 
-  @IsDateString()
-  startDate: Date;
+  @IsOptional()
+  @IsString()
+  compaingDuration?: string;
 
-  @IsDateString()
-  endDate: Date;
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsString()
+  endDate?: string;
 
   @IsOptional()
   @IsString()
