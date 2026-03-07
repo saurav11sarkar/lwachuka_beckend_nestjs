@@ -16,6 +16,8 @@ import { ContactpropretyModule } from './app/module/contactproprety/contactpropr
 import { AdvertisementmanagementModule } from './app/module/advertisementmanagement/advertisementmanagement.module';
 import { AdvertisementModule } from './app/module/advertisement/advertisement.module';
 import { MpesaModule } from './app/module/mpesa/mpesa.module';
+import { DashboardModule } from './app/module/dashboard/dashboard.module';
+import { LoginhistoryModule } from './app/module/loginhistory/loginhistory.module';
 import config from './app/config';
 
 @Module({
@@ -35,6 +37,8 @@ import config from './app/config';
     AdvertisementmanagementModule,
     AdvertisementModule,
     MpesaModule,
+    DashboardModule,
+    LoginhistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

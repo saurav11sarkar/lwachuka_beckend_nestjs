@@ -33,8 +33,9 @@ export class AuthController {
   async login(
     @Body() createAuthDto: { email: string; password: string },
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ) {
-    const result = await this.authService.login(createAuthDto, res);
+    const result = await this.authService.login(createAuthDto, res, req);
 
     return {
       message: 'User logged in successfully',

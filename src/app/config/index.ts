@@ -49,4 +49,5 @@ export default {
     mpass_passkey: process.env.PASSKEY,
     mpass_callback_url: process.env.CALLBACK_URL,
   },
+  googlemap_apikey: process.env.GOOGLE_MAPS_API_KEY,
 };

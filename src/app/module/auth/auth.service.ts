@@ -3,16 +3,22 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../user/entities/user.entity';
 import mongoose from 'mongoose';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import config from 'src/app/config';
 import sendMailer from 'src/app/helper/sendMailer';
+import {
+  Loginhistory,
+  LoginhistoryDocument,
+} from '../loginhistory/entities/loginhistory.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: mongoose.Model<User>,
+    @InjectModel(Loginhistory.name)
+    private readonly loginhistoryModel: mongoose.Model<LoginhistoryDocument>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -37,25 +43,65 @@ export class AuthService {
     return result;
   }
 
-  async login(payload: { email: string; password: string }, res: Response) {
+  async login(
+    payload: { email: string; password: string },
+    res: Response,
+    req: Request,
+  ) {
+    const forwarded = req.headers['x-forwarded-for'];
+
+    let ipaddress =
+      typeof forwarded === 'string'
+        ? forwarded.split(',')[0]
+        : req.socket.remoteAddress || 'unknown';
+
+    if (ipaddress === '::1') {
+      ipaddress = '127.0.0.1';
+    }
+
     const user = await this.userModel
       .findOne({ email: payload.email })
       .select('+password');
-    if (!user) throw new HttpException('Email not found', 404);
 
-    const isMath = await bcrypt.compare(payload.password, user.password);
-    if (!isMath) throw new HttpException('password incorrect', 400);
+    if (!user) {
+      await this.loginhistoryModel.create({
+        email: payload.email,
+        role: 'User Login',
+        ipaddress,
+        loginTime: new Date(),
+        status: 'failed',
+      });
 
-    // if (user.role !== 'user' && user.role !== 'admin') {
-    if (user.status === 'pending')
-      throw new HttpException(
-        'You are not approved alrady pending please contact admin',
-        400,
-      );
-    // }
+      throw new HttpException('Email not found', 404);
+    }
 
-    if (user.status === 'block')
-      throw new HttpException('Your account has been blocked by admin', 400);
+    const isMatch = await bcrypt.compare(payload.password, user.password);
+
+    if (!isMatch) {
+      await this.loginhistoryModel.create({
+        userId: user._id,
+        email: user.email,
+        role: 'User Login',
+        ipaddress,
+        loginTime: new Date(),
+        status: 'failed',
+      });
+
+      throw new HttpException('Password incorrect', 400);
+    }
+
+    if (user.status === 'block') {
+      await this.loginhistoryModel.create({
+        userId: user._id,
+        email: user.email,
+        role: 'User Login',
+        ipaddress,
+        loginTime: new Date(),
+        status: 'blocked',
+      });
+
+      throw new HttpException('Your account has been blocked', 400);
+    }
 
     const accessToken = this.jwtService.sign(
       {
@@ -84,6 +130,15 @@ export class AuthService {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: config.env === 'production',
+    });
+
+    await this.loginhistoryModel.create({
+      userId: user._id,
+      email: user.email,
+      role: 'User Login',
+      ipaddress,
+      loginTime: new Date(),
+      status: 'success',
     });
 
     return {

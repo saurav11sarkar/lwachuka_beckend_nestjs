@@ -13,7 +13,7 @@ const port = config.port;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug'],
+    logger: ['error', 'warn', 'debug'],
   });
   app.use('/api/v1/webhook', express.raw({ type: 'application/json' }));
 

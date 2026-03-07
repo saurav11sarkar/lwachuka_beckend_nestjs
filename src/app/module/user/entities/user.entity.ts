@@ -58,15 +58,15 @@ export class User {
   @Prop()
   otpExpiry?: Date;
 
-  // ✅ default false
+  // default false
   @Prop({ default: false })
   verifiedForget: boolean;
 
-  // ✅ optional
+  // optional
   @Prop()
   stripeAccountId: string;
 
-  // ✅ default false
+  // default false
   @Prop({ default: false })
   isSubscribed: boolean;
 
