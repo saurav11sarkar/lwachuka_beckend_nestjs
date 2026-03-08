@@ -294,4 +294,29 @@ export class CalenderService {
       cancelled,
     };
   }
+
+  async getAllUpcomingVisits(userId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // start of today
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+
+    const visits = await this.calenderModel
+      .find({
+        user: user._id,
+        status: 'approved',
+        moveInData: { $gte: today },
+      })
+      .populate('user', 'firstName lastName email profileImage')
+      .populate('property', 'title location price')
+      .sort({ moveInData: 1 });
+
+    return {
+      total: visits.length,
+      data: visits,
+    };
+  }
 }

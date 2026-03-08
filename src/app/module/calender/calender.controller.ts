@@ -112,6 +112,20 @@ export class CalenderController {
     };
   }
 
+  @Get('upcoming-visits')
+  @UseGuards(AuthGuard('user'))
+  @HttpCode(HttpStatus.OK)
+  async getAllUpcomingVisits(@Req() req: Request) {
+    const agentId = req.user!.id;
+
+    const result = await this.calenderService.getAllUpcomingVisits(agentId);
+
+    return {
+      message: 'Upcoming visits retrieved successfully',
+      data: result,
+    };
+  }
+
   @Put('status/:id')
   @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
