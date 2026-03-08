@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreatePropertyDto {
   @IsString()
@@ -95,6 +95,11 @@ export class CreatePropertyDto {
   description?: string;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') return JSON.parse(value);
+    return [];
+  })
   @IsArray()
   propertyCommunityAmenities?: string[];
 
@@ -141,8 +146,9 @@ export class CreatePropertyDto {
   originalPrice?: number;
 
   @IsOptional()
-  @IsDateString()
-  handoverDate?: Date;
+@Transform(({ value }) => value ? new Date(value).toISOString() : undefined)
+@IsDateString()
+handoverDate?: Date;
 
   @IsOptional()
   @IsEnum(['pending', 'approved', 'rejected'])
