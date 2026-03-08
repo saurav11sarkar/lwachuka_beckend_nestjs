@@ -3,10 +3,12 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import type { Request } from 'express';
 
 @Controller('dashboard')
 export class DashboardController {
@@ -32,6 +34,20 @@ export class DashboardController {
 
     return {
       message: 'Dashboard data fetched successfully',
+      data: result,
+    };
+  }
+
+  @Get('agent-overview')
+  @UseGuards(AuthGuard('agent'))
+  @HttpCode(HttpStatus.OK)
+  async agentDashboardOverview(@Req() req: Request) {
+    const result = await this.dashboardService.agentDashboardOverview(
+      req.user!.id,
+    );
+
+    return {
+      message: 'Agent dashboard overview',
       data: result,
     };
   }

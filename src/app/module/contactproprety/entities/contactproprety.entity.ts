@@ -25,6 +25,12 @@ export class ContactProperty {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
+  @Prop()
+  email: string;
+
+  @Prop()
+  phoneNumber: string;
+
   @Prop({ type: Types.ObjectId, ref: 'Property', required: true })
   propertyId: Types.ObjectId;
 

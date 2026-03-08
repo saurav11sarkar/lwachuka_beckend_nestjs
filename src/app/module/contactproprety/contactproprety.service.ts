@@ -12,6 +12,8 @@ import {
 } from '../property/entities/property.entity';
 import { User, UserDocument } from '../user/entities/user.entity';
 import { SendMessageDto } from './dto/send-message.dto';
+import { IFilterParams } from 'src/app/helper/pick';
+import paginationHelper, { IOptions } from 'src/app/helper/pagenation';
 
 @Injectable()
 export class ContactpropretyService {
@@ -81,7 +83,7 @@ export class ContactpropretyService {
     const sender = await this.userModel.findById(senderId);
     if (!sender) throw new HttpException('Sender not found', 404);
 
-    const role = sender.role === 'vendor' ? 'vendor' : 'user';
+    const role = sender.role === 'agent' ? 'agent' : 'user';
 
     await this.contactPropertyModel.findByIdAndUpdate(dto.contactId, {
       $push: {
@@ -91,7 +93,7 @@ export class ContactpropretyService {
           message: dto.message,
         },
       },
-      ...(role === 'vendor' && { status: 'responded' }),
+      ...(role === 'agent' && { status: 'responded' }),
     });
 
     return { message: 'Message sent successfully' };
@@ -102,5 +104,126 @@ export class ContactpropretyService {
     const chat = await this.contactPropertyModel.findById(contactId);
     if (!chat) throw new HttpException('Conversation not found', 404);
     return chat;
+  }
+
+  async getMyAllmyLeads(
+    userId: string,
+    params: IFilterParams,
+    options: IOptions,
+  ) {
+    const { limit, page, skip, sortBy, sortOrder } = paginationHelper(options);
+    const { searchTerm, ...filterData } = params;
+
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new HttpException('User not found', 404);
+
+    const andCondition: any[] = [];
+
+    // Only agent's leads
+    andCondition.push({ propertyOwnerId: user._id });
+
+    // Filters (status, etc.)
+    if (Object.keys(filterData).length > 0) {
+      andCondition.push({
+        $and: Object.entries(filterData).map(([key, value]) => ({
+          [key]: value,
+        })),
+      });
+    }
+
+    // Search term for messages or status
+    if (searchTerm) {
+      andCondition.push({
+        $or: [
+          { status: { $regex: searchTerm, $options: 'i' } },
+          { 'messages.message': { $regex: searchTerm, $options: 'i' } },
+        ],
+      });
+    }
+
+    const whereConditions =
+      andCondition.length > 0 ? { $and: andCondition } : {};
+
+    // Get contacts (leads) with pagination
+    const contacts = await this.contactPropertyModel
+      .find(whereConditions)
+      .populate('userId', 'firstName lastName email profileImage role')
+      .populate('propertyOwnerId', 'firstName lastName email profileImage role')
+      .populate('propertyId', 'title location price status')
+      .sort({ [sortBy || 'updatedAt']: sortOrder === 'asc' ? 1 : -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total =
+      await this.contactPropertyModel.countDocuments(whereConditions);
+
+    return {
+      data: contacts,
+      meta: {
+        page,
+        limit,
+        total,
+      },
+    };
+  }
+
+  async getsingleLead(contactId: string) {
+    const contact = await this.contactPropertyModel
+      .findById(contactId)
+      .populate({
+        path: 'userId',
+        select: 'firstName lastName email profileImage role',
+      })
+      .populate({
+        path: 'propertyOwnerId',
+        select: 'firstName lastName email profileImage role',
+      })
+      .populate({
+        path: 'propertyId',
+        select: 'title location price status images',
+      })
+      .populate({
+        path: 'messages.senderId',
+        select: 'firstName lastName email profileImage role',
+      });
+
+    if (!contact) {
+      throw new HttpException('Contact not found', 404);
+    }
+
+    return contact;
+  }
+
+  async inquiryHistory(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new HttpException('User not found', 404);
+
+    const [pending, viewed, responded, total] = await Promise.all([
+      this.contactPropertyModel.countDocuments({
+        userId: user._id,
+        status: 'pending',
+      }),
+
+      this.contactPropertyModel.countDocuments({
+        userId: user._id,
+        status: 'viewed',
+      }),
+
+      this.contactPropertyModel.countDocuments({
+        userId: user._id,
+        status: 'responded',
+      }),
+
+      this.contactPropertyModel.countDocuments({
+        userId: user._id,
+      }),
+    ]);
+
+    return {
+      totalInquiry: total,
+      pendingInquiry: pending,
+      viewedInquiry: viewed,
+      respondedInquiry: responded,
+    };
   }
 }

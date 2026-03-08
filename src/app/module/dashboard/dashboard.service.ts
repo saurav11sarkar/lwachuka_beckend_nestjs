@@ -151,7 +151,26 @@ export class DashboardService {
     const savedProperties = await this.bookmarModel.countDocuments({
       user: userId,
     });
+  }
 
-    
+  async agentDashboardOverview(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new HttpException('User is not found', 404);
+
+    const totalProperty = await this.propertyModel.countDocuments({
+      createBy: user._id,
+    });
+    const activeProperty = await this.propertyModel.countDocuments({
+      createBy: user._id,
+      status: 'approved',
+    });
+
+    const upCommingSiteViste = 3;
+
+    return {
+      totalProperty,
+      activeProperty,
+      upCommingSiteViste,
+    };
   }
 }

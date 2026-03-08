@@ -249,4 +249,74 @@ export class CalenderService {
     const result = await this.calenderModel.findByIdAndDelete(id);
     return result;
   }
+
+  async updateVisitStatus(id: string, status: string) {
+    const visit = await this.calenderModel.findById(id);
+
+    if (!visit) {
+      throw new HttpException('Visit not found', 404);
+    }
+
+    visit.status = status;
+
+    await visit.save();
+
+    return visit;
+  }
+
+  async getVisitStats(agentId: string) {
+    const properties = await this.propertyModel.find({
+      createBy: agentId,
+    });
+
+    const propertyIds = properties.map((p) => p._id);
+
+    const [upcoming, completed, cancelled] = await Promise.all([
+      this.calenderModel.countDocuments({
+        property: { $in: propertyIds },
+        status: 'approved',
+      }),
+
+      this.calenderModel.countDocuments({
+        property: { $in: propertyIds },
+        status: 'completed',
+      }),
+
+      this.calenderModel.countDocuments({
+        property: { $in: propertyIds },
+        status: 'cancelled',
+      }),
+    ]);
+
+    return {
+      upcoming,
+      completed,
+      cancelled,
+    };
+  }
+
+  async getAllUpcomingVisits(userId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // start of today
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+
+    const visits = await this.calenderModel
+      .find({
+        user: user._id,
+        status: 'approved',
+        moveInData: { $gte: today },
+      })
+      .populate('user', 'firstName lastName email profileImage')
+      .populate('property', 'title location price')
+      .sort({ moveInData: 1 });
+
+    return {
+      total: visits.length,
+      data: visits,
+    };
+  }
 }

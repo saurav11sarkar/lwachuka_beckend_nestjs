@@ -23,6 +23,12 @@ export class Calender {
   @Prop()
   customMessage: string;
 
+  @Prop({
+    enum: ['pending', 'approved', 'completed', 'cancelled'],
+    default: 'pending',
+  })
+  status: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   user: mongoose.Types.ObjectId;
 

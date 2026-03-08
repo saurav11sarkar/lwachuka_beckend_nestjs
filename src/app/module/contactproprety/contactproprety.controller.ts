@@ -14,6 +14,7 @@ import { CreateContactpropretyDto } from './dto/create-contactproprety.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import type { Request } from 'express';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import pick from 'src/app/helper/pick';
 
 @Controller('contact-property')
 export class ContactpropretyController {
@@ -23,16 +24,62 @@ export class ContactpropretyController {
 
   // Reply
   @Post('send-message')
-  @UseGuards(AuthGuard('user', 'vendor', 'agent'))
+  @UseGuards(AuthGuard('user', 'agent'))
   @HttpCode(HttpStatus.OK)
   async sendMessage(@Req() req: Request, @Body() dto: SendMessageDto) {
     const senderId = req.user!.id;
-    console.log(senderId);
-    console.log(dto);
     const result = await this.contactpropretyService.sendMessage(senderId, dto);
 
     return {
       message: 'Message sent successfully',
+      data: result,
+    };
+  }
+
+  @Get('my-leads')
+  @UseGuards(AuthGuard('agent'))
+  @HttpCode(HttpStatus.OK)
+  async getMyAllmyLeads(@Req() req: Request) {
+    const userId = req.user!.id;
+
+    const filters = pick(req.query, ['searchTerm', 'status']);
+    const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
+
+    const result = await this.contactpropretyService.getMyAllmyLeads(
+      userId,
+      filters,
+      options,
+    );
+
+    return {
+      message: 'Leads retrieved successfully',
+      meta: result.meta,
+      data: result.data,
+    };
+  }
+
+  @Get('inquiry-history')
+  @UseGuards(AuthGuard('user'))
+  @HttpCode(HttpStatus.OK)
+  async inquiryHistory(@Req() req: Request) {
+    const userId = req.user!.id;
+
+    const result = await this.contactpropretyService.inquiryHistory(userId);
+
+    return {
+      message: 'Inquiry history retrieved successfully',
+      data: result,
+    };
+  }
+
+  @Get('lead/:id')
+  // @UseGuards(AuthGuard('agent'))
+  @HttpCode(HttpStatus.OK)
+  async getsingleLead(@Param('id') id: string) {
+    const result = await this.contactpropretyService.getsingleLead(id);
+
+    return {
+      message: 'Lead retrieved successfully',
       data: result,
     };
   }
