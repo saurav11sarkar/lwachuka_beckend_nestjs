@@ -37,8 +37,6 @@ export class ContactpropretyService {
     const user = await this.userModel.findById(userId);
     if (!user) throw new HttpException('User not found', 404);
 
-    console.log(user);
-
     const property = await this.propertyModel.findById(propertyId);
     if (!property) throw new HttpException('Property not found', 404);
 
@@ -83,7 +81,12 @@ export class ContactpropretyService {
     const sender = await this.userModel.findById(senderId);
     if (!sender) throw new HttpException('Sender not found', 404);
 
-    const role = sender.role === 'agent' ? 'agent' : 'user';
+    const role =
+      sender.role === 'agent'
+        ? 'agent'
+        : sender.role === 'vendor'
+          ? 'vendor'
+          : 'user';
 
     await this.contactPropertyModel.findByIdAndUpdate(dto.contactId, {
       $push: {
@@ -224,6 +227,69 @@ export class ContactpropretyService {
       pendingInquiry: pending,
       viewedInquiry: viewed,
       respondedInquiry: responded,
+    };
+  }
+
+  async getAllMyinquiry(
+    userId: string,
+    params: IFilterParams,
+    options: IOptions,
+  ) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new HttpException('User not found', 404);
+
+    const { limit, page, skip, sortBy, sortOrder } = paginationHelper(options);
+
+    const { searchTerm, ...filterData } = params;
+
+    const andCondition: any[] = [];
+    const searchAbleFields = ['status'];
+
+    if (searchTerm) {
+      andCondition.push({
+        $or: searchAbleFields.map((field) => ({
+          [field]: {
+            $regex: searchTerm,
+            $options: 'i',
+          },
+        })),
+      });
+    }
+
+    if (Object.keys(filterData).length > 0) {
+      andCondition.push({
+        $and: Object.entries(filterData).map(([key, value]) => ({
+          [key]: value,
+        })),
+      });
+    }
+
+    andCondition.push({ userId: user._id });
+
+    const whereConditions =
+      andCondition.length > 0 ? { $and: andCondition } : {};
+
+    const result = await this.contactPropertyModel
+      .find(whereConditions)
+      .sort({
+        [sortBy || 'updatedAt']: sortOrder === 'asc' ? 1 : -1,
+      })
+      .skip(skip)
+      .limit(limit)
+      .populate('userId', 'firstName lastName email profileImage role')
+      .populate('propertyId', 'title location price status images')
+      .populate('propertyOwnerId', 'firstName lastName email profileImage role')
+      .populate('messages.senderId', 'firstName lastName email profileImage role');
+    const total =
+      await this.contactPropertyModel.countDocuments(whereConditions);
+
+    return {
+      data: result,
+      meta: {
+        page,
+        limit,
+        total,
+      },
     };
   }
 }

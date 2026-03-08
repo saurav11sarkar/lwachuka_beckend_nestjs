@@ -7,8 +7,8 @@ class Message {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   senderId: Types.ObjectId;
 
-  @Prop({ enum: ['user', 'vendor'], required: true })
-  senderRole: 'user' | 'vendor';
+  @Prop({ enum: ['user', 'agent', 'vendor'], required: true })
+  senderRole: 'user' | 'agent' | 'vendor';
 
   @Prop({ required: true })
   message: string;
