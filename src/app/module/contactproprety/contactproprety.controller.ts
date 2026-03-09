@@ -58,6 +58,26 @@ export class ContactpropretyController {
     };
   }
 
+  @Get('my-inquiry')
+  // @Get('my-inquey')
+  @UseGuards(AuthGuard('user'))
+  @HttpCode(HttpStatus.OK)
+  async agentProperty(@Req() req: Request) {
+    const filters = pick(req.query, ['searchTerm', 'status']);
+    const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
+    const result = await this.contactpropretyService.getAllMyinquiry(
+      req.user!.id,
+      filters,
+      options,
+    );
+
+    return {
+      message: 'user retrieved successfully',
+      meta: result.meta,
+      data: result.data,
+    };
+  }
+
   @Get('inquiry-history')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
