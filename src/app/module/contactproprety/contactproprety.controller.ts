@@ -37,7 +37,7 @@ export class ContactpropretyController {
   }
 
   @Get('my-leads')
-  @UseGuards(AuthGuard('agent'))
+  @UseGuards(AuthGuard('agent', 'user'))
   @HttpCode(HttpStatus.OK)
   async getMyAllmyLeads(@Req() req: Request) {
     const userId = req.user!.id;
