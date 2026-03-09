@@ -268,7 +268,7 @@ export class UserService {
   }
 
   async getProfile(id: string) {
-    const result = await this.userModel.findById(id);
+    const result = await this.userModel.findById(id).populate('subscribers');
     if (!result) throw new HttpException('User not found', 404);
     return result;
   }

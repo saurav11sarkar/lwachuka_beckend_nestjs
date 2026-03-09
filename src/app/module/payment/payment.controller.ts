@@ -38,7 +38,7 @@ export class PaymentController {
 
   @Get('my')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('vendor'))
+  @UseGuards(AuthGuard('vendor', 'agent'))
   async getMyPayments(@Req() req: Request) {
     const query = req.query;
     const filters = pick(query, [

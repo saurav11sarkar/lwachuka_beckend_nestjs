@@ -121,6 +121,11 @@ export class CreatePropertyDto {
   price: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') return [value];
+    return [];
+  })
   @IsArray()
   images?: string[];
 
@@ -146,9 +151,9 @@ export class CreatePropertyDto {
   originalPrice?: number;
 
   @IsOptional()
-@Transform(({ value }) => value ? new Date(value).toISOString() : undefined)
-@IsDateString()
-handoverDate?: Date;
+  @Transform(({ value }) => value ? new Date(value).toISOString() : undefined)
+  @IsDateString()
+  handoverDate?: Date;
 
   @IsOptional()
   @IsEnum(['pending', 'approved', 'rejected'])

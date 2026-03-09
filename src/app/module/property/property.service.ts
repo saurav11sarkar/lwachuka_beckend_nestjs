@@ -17,7 +17,7 @@ export class PropertyService {
     private readonly propertyModel: mongoose.Model<Property>,
     @InjectModel(User.name)
     private readonly userModel: mongoose.Model<User>,
-  ) {}
+  ) { }
 
   async createProperty(
     userId: string,
@@ -228,11 +228,14 @@ export class PropertyService {
       }
     }
 
+    const existingImages = Array.isArray(payload.images) ? payload.images : [];
+
     if (files?.length) {
       const properityImage = await Promise.all(
         files.map((file) => fileUpload.uploadToCloudinary(file)),
       );
-      payload.images = properityImage.map((img) => img.url);
+      const newImages = properityImage.map((img) => img.url);
+      payload.images = [...existingImages, ...newImages];
     }
 
     const result = await this.propertyModel.findByIdAndUpdate(
@@ -348,5 +351,78 @@ export class PropertyService {
       { new: true },
     );
     return result;
+  }
+
+  async getAllPadPropertyListing(params: IFilterParams, options: IOptions) {
+    const users = await this.userModel.find({
+      role: 'agent',
+      isSubscribed: true,
+    });
+    const subscribedAgentIds = users.map((user) => user._id);
+
+    const { limit, page, skip, sortBy, sortOrder } = paginationHelper(options);
+    const { searchTerm, ...filterData } = params;
+
+    const andCondition: any[] = [];
+    const searchAbleFields = [
+      'title',
+      'listingType',
+      'propertyType',
+      'kitchenType',
+      'location',
+      'finishes',
+      'balconyType',
+      'storage',
+      'coolingSystem',
+      'moveInStatus',
+      'description',
+      'propertyCommunityAmenities',
+      'purpose',
+      'referenceNumber',
+      'status',
+    ];
+
+    if (searchTerm) {
+      andCondition.push({
+        $or: searchAbleFields.map((field) => ({
+          [field]: {
+            $regex: searchTerm,
+            $options: 'i',
+          },
+        })),
+      });
+    }
+
+    if (Object.keys(filterData).length > 0) {
+      andCondition.push({
+        $and: Object.entries(filterData).map(([key, value]) => ({
+          [key]: value,
+        })),
+      });
+    }
+
+    andCondition.push({
+      createBy: { $in: subscribedAgentIds },
+    });
+
+    const whereConditions =
+      andCondition.length > 0 ? { $and: andCondition } : {};
+
+    const result = await this.propertyModel
+      .find(whereConditions)
+      .sort({ [sortBy]: sortOrder } as any)
+      .skip(skip)
+      .limit(limit)
+      .populate('createBy');
+    const total = await this.propertyModel.countDocuments(whereConditions);
+
+    return {
+      data: result,
+      meta: {
+        page,
+        limit,
+        total,
+      },
+    };
   }
 }

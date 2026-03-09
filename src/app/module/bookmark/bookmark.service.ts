@@ -84,14 +84,8 @@ export class BookmarkService {
 
     const result = await this.bookmarkModel
       .find(whereCondition)
-      .populate({
-        path: 'property',
-        select: 'title listingType location price images',
-        populate: {
-          path: 'createBy',
-          select: 'name email',
-        },
-      })
+      .populate('property')
+      .populate('user')
       .sort({ [sortBy]: sortOrder } as any)
       .skip(skip)
       .limit(limit);
