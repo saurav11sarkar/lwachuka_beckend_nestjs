@@ -79,12 +79,16 @@ export class ContactpropretyController {
   }
 
   @Get('inquiry-history')
-  @UseGuards(AuthGuard('user'))
+  @UseGuards(AuthGuard('user', 'agent'))
   @HttpCode(HttpStatus.OK)
   async inquiryHistory(@Req() req: Request) {
     const userId = req.user!.id;
+    const role = req.user!.role;
 
-    const result = await this.contactpropretyService.inquiryHistory(userId);
+    const result = await this.contactpropretyService.inquiryHistory(
+      userId,
+      role,
+    );
 
     return {
       message: 'Inquiry history retrieved successfully',

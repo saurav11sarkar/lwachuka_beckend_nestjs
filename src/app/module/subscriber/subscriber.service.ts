@@ -187,6 +187,7 @@ export class SubscriberService {
       paymentId: payment._id,
       merchantRequestId: stkRes.MerchantRequestID,
       checkoutRequestId: stkRes.CheckoutRequestID,
+      amount: sub.price,
       // ✅ After this, user enters PIN on phone → Safaricom calls callback automatically
       message:
         stkRes.CustomerMessage ||

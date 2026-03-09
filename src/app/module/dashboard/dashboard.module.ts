@@ -10,6 +10,7 @@ import {
   ContactProperty,
   ContactPropertySchema,
 } from '../contactproprety/entities/contactproprety.entity';
+import { Calender, CalenderSchema } from '../calender/entities/calender.entity';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import {
       { name: Property.name, schema: PropertySchema },
       { name: Payment.name, schema: PaymentSchema },
       { name: ContactProperty.name, schema: ContactPropertySchema },
+      { name: Calender.name, schema: CalenderSchema },
     ]),
   ],
   controllers: [DashboardController],

@@ -100,11 +100,12 @@ export class CalenderController {
   }
 
   @Get('visit-stats')
-  @UseGuards(AuthGuard('agent'))
+  @UseGuards(AuthGuard('agent', 'user'))
   async getVisitStats(@Req() req: Request) {
-    const agentId = req.user!.id;
+    const userId = req.user!.id;
+    const role = req.user!.role;
 
-    const result = await this.calenderService.getVisitStats(agentId);
+    const result = await this.calenderService.getVisitStats(userId, role);
 
     return {
       message: 'Visit stats retrieved',

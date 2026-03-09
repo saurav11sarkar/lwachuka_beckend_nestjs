@@ -25,6 +25,21 @@ export class CalenderService {
     private userModel: Model<UserDocument>,
   ) {}
 
+  private async syncExpiredApprovedVisits() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    await this.calenderModel.updateMany(
+      {
+        status: 'approved',
+        moveInData: { $lt: today },
+      },
+      {
+        $set: { status: 'completed' },
+      },
+    );
+  }
+
   async createCalender(
     userId: string,
     createCalenderDto: CreateCalenderDto,
@@ -48,6 +63,8 @@ export class CalenderService {
     params: IFilterParams,
     options: IOptions,
   ) {
+    await this.syncExpiredApprovedVisits();
+
     const { limit, page, skip, sortBy, sortOrder } = paginationHelper(options);
     const { searchTerm, ...filterData } = params;
 
@@ -117,6 +134,8 @@ export class CalenderService {
     params: IFilterParams,
     options: IOptions,
   ) {
+    await this.syncExpiredApprovedVisits();
+
     const { limit, page, skip, sortBy, sortOrder } = paginationHelper(options);
     const { searchTerm, ...filterData } = params;
 
@@ -191,6 +210,8 @@ export class CalenderService {
   }
 
   async getMyCalenderById(id: string) {
+    await this.syncExpiredApprovedVisits();
+
     const calender = await this.calenderModel.findById(id);
     if (!calender) {
       throw new HttpException('Calender not found', HttpStatus.NOT_FOUND);
@@ -264,22 +285,65 @@ export class CalenderService {
     return visit;
   }
 
-  async getVisitStats(agentId: string) {
+  async getVisitStats(userId: string, role: string) {
+    await this.syncExpiredApprovedVisits();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (role === 'user') {
+      const [upcoming, completed, pending, cancelled] = await Promise.all([
+        this.calenderModel.countDocuments({
+          user: userId,
+          status: 'approved',
+          moveInData: { $gte: today },
+        }),
+
+        this.calenderModel.countDocuments({
+          user: userId,
+          status: 'completed',
+        }),
+
+        this.calenderModel.countDocuments({
+          user: userId,
+          status: 'pending',
+        }),
+
+        this.calenderModel.countDocuments({
+          user: userId,
+          status: 'cancelled',
+        }),
+      ]);
+
+      return {
+        upcoming,
+        completed,
+        pending,
+        cancelled,
+      };
+    }
+
     const properties = await this.propertyModel.find({
-      createBy: agentId,
+      createBy: userId,
     });
 
     const propertyIds = properties.map((p) => p._id);
 
-    const [upcoming, completed, cancelled] = await Promise.all([
+    const [upcoming, completed, pending, cancelled] = await Promise.all([
       this.calenderModel.countDocuments({
         property: { $in: propertyIds },
         status: 'approved',
+        moveInData: { $gte: today },
       }),
 
       this.calenderModel.countDocuments({
         property: { $in: propertyIds },
         status: 'completed',
+      }),
+
+      this.calenderModel.countDocuments({
+        property: { $in: propertyIds },
+        status: 'pending',
       }),
 
       this.calenderModel.countDocuments({
@@ -291,11 +355,14 @@ export class CalenderService {
     return {
       upcoming,
       completed,
+      pending,
       cancelled,
     };
   }
 
   async getAllUpcomingVisits(userId: string) {
+    await this.syncExpiredApprovedVisits();
+
     const today = new Date();
     today.setHours(0, 0, 0, 0); // start of today
 

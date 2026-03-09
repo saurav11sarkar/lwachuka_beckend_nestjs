@@ -200,28 +200,30 @@ export class ContactpropretyService {
     return contact;
   }
 
-  async inquiryHistory(userId: string) {
+  async inquiryHistory(userId: string, role: string) {
     const user = await this.userModel.findById(userId);
     if (!user) throw new HttpException('User not found', 404);
 
+    const ownerField = role === 'agent' ? 'propertyOwnerId' : 'userId';
+
     const [pending, viewed, responded, total] = await Promise.all([
       this.contactPropertyModel.countDocuments({
-        userId: user._id,
+        [ownerField]: user._id,
         status: 'pending',
       }),
 
       this.contactPropertyModel.countDocuments({
-        userId: user._id,
+        [ownerField]: user._id,
         status: 'viewed',
       }),
 
       this.contactPropertyModel.countDocuments({
-        userId: user._id,
+        [ownerField]: user._id,
         status: 'responded',
       }),
 
       this.contactPropertyModel.countDocuments({
-        userId: user._id,
+        [ownerField]: user._id,
       }),
     ]);
 

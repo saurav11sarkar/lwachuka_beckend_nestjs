@@ -15,6 +15,7 @@ import {
   ContactProperty,
   ContactPropertyDocument,
 } from '../contactproprety/entities/contactproprety.entity';
+import { Calender, CalenderDocument } from '../calender/entities/calender.entity';
 
 @Injectable()
 export class DashboardService {
@@ -29,6 +30,8 @@ export class DashboardService {
     private readonly paymentModel: Model<PaymentDocument>,
     @InjectModel(ContactProperty.name)
     private readonly contactPropertyModel: Model<ContactPropertyDocument>,
+    @InjectModel(Calender.name)
+    private readonly calenderModel: Model<CalenderDocument>,
   ) {}
 
   async adminDashboradOverviw() {
@@ -158,7 +161,14 @@ export class DashboardService {
       user: userId,
     });
 
-    const upcommingSiteVisit = 2;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcommingSiteVisit = await this.calenderModel.countDocuments({
+      user: user._id,
+      status: 'approved',
+      moveInData: { $gte: today },
+    });
 
     const totalInquiries = await this.contactPropertyModel.countDocuments({
       userId: user._id,
@@ -171,9 +181,11 @@ export class DashboardService {
     };
   }
 
-  async agentDashboardOverview(userId: string) {
+  async agentDashboardOverview(userId: string, year?: number) {
     const user = await this.userModel.findById(userId);
     if (!user) throw new HttpException('User is not found', 404);
+
+    const selectedYear = year || new Date().getFullYear();
 
     const totalProperty = await this.propertyModel.countDocuments({
       createBy: user._id,
@@ -183,12 +195,77 @@ export class DashboardService {
       status: 'approved',
     });
 
-    const upCommingSiteViste = 3;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const properties = await this.propertyModel.find(
+      { createBy: user._id },
+      { _id: 1 },
+    );
+    const propertyIds = properties.map((property) => property._id);
+
+    const upCommingSiteViste = await this.calenderModel.countDocuments({
+      property: { $in: propertyIds },
+      status: 'approved',
+      moveInData: { $gte: today },
+    });
+
+    const startDate = new Date(selectedYear, 0, 1);
+    const endDate = new Date(selectedYear + 1, 0, 1);
+
+    const monthlyListingsRaw = await this.propertyModel.aggregate([
+      {
+        $match: {
+          createBy: user._id,
+          createdAt: {
+            $gte: startDate,
+            $lt: endDate,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$createdAt' },
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const monthLabels = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+
+    const totalListingsByMonth = monthLabels.map((month, index) => {
+      const foundMonth = monthlyListingsRaw.find(
+        (item) => item._id === index + 1,
+      );
+
+      return {
+        month,
+        total: foundMonth?.total || 0,
+      };
+    });
 
     return {
       totalProperty,
       activeProperty,
       upCommingSiteViste,
+      selectedYear,
+      totalListingsByMonth,
     };
   }
 }

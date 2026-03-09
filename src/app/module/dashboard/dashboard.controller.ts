@@ -3,6 +3,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -41,9 +42,13 @@ export class DashboardController {
   @Get('agent-overview')
   @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
-  async agentDashboardOverview(@Req() req: Request) {
+  async agentDashboardOverview(
+    @Req() req: Request,
+    @Query('year') year?: string,
+  ) {
     const result = await this.dashboardService.agentDashboardOverview(
       req.user!.id,
+      year ? Number(year) : undefined,
     );
 
     return {
