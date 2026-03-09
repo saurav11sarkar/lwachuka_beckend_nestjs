@@ -223,7 +223,59 @@ export class UserService {
   }
 
   async getSingleUser(id: string) {
-    const result = await this.userModel.findById(id);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new HttpException('User not found', 404);
+    }
+
+    const [result] = await this.userModel.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: 'properties',
+          localField: '_id',
+          foreignField: 'createBy',
+          as: 'properties',
+        },
+      },
+      {
+        $lookup: {
+          from: 'advertisements',
+          localField: '_id',
+          foreignField: 'createdBy',
+          as: 'advertisements',
+        },
+      },
+      {
+        $addFields: {
+          totalPropertyCount: {
+            $size: '$properties',
+          },
+          approvedPropertyCount: {
+            $size: {
+              $filter: {
+                input: '$properties',
+                as: 'property',
+                cond: { $eq: ['$$property.status', 'approved'] },
+              },
+            },
+          },
+          advertisementCount: {
+            $size: '$advertisements',
+          },
+        },
+      },
+      {
+        $project: {
+          properties: 0,
+          advertisements: 0,
+        },
+      },
+    ]);
+
     if (!result) throw new HttpException('User not found', 404);
     return result;
   }
