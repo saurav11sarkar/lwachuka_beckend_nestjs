@@ -51,4 +51,18 @@ export class DashboardController {
       data: result,
     };
   }
+
+  @Get('user-overview')
+  @UseGuards(AuthGuard('user'))
+  @HttpCode(HttpStatus.OK)
+  async userDashboardOverview(@Req() req: Request) {
+    const result = await this.dashboardService.userDashboardOverview(
+      req.user!.id,
+    );
+
+    return {
+      message: 'User dashboard overview',
+      data: result,
+    };
+  }
 }

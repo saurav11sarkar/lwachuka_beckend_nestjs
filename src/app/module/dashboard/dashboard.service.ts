@@ -11,6 +11,10 @@ import {
   PropertyDocument,
 } from '../property/entities/property.entity';
 import { Payment, PaymentDocument } from '../payment/entities/payment.entity';
+import {
+  ContactProperty,
+  ContactPropertyDocument,
+} from '../contactproprety/entities/contactproprety.entity';
 
 @Injectable()
 export class DashboardService {
@@ -23,6 +27,8 @@ export class DashboardService {
     private readonly propertyModel: Model<PropertyDocument>,
     @InjectModel(Payment.name)
     private readonly paymentModel: Model<PaymentDocument>,
+    @InjectModel(ContactProperty.name)
+    private readonly contactPropertyModel: Model<ContactPropertyDocument>,
   ) {}
 
   async adminDashboradOverviw() {
@@ -151,6 +157,18 @@ export class DashboardService {
     const savedProperties = await this.bookmarModel.countDocuments({
       user: userId,
     });
+
+    const upcommingSiteVisit = 2;
+
+    const totalInquiries = await this.contactPropertyModel.countDocuments({
+      userId: user._id,
+    });
+
+    return {
+      savedProperties,
+      upcommingSiteVisit,
+      totalInquiries,
+    };
   }
 
   async agentDashboardOverview(userId: string) {
