@@ -80,6 +80,41 @@ export class PropertyController {
     };
   }
 
+  @Get('get-all-pad-property-listing')
+  @HttpCode(HttpStatus.OK)
+  async getAllPadPropertyListing(@Req() req: Request) {
+    const filters = pick(req.query, [
+      'searchTerm',
+      'title',
+      'listingType',
+      'propertyType',
+      'kitchenType',
+      'location',
+      'finishes',
+      'balconyType',
+      'storage',
+      'coolingSystem',
+      'moveInStatus',
+      'description',
+      'propertyCommunityAmenities',
+      'purpose',
+      'referenceNumber',
+      'status',
+      'price',
+    ]);
+    const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
+    const result = await this.propertyService.getAllPadPropertyListing(
+      filters,
+      options,
+    );
+
+    return {
+      message: 'All property retrieved successfully',
+      meta: result.meta,
+      data: result.data,
+    };
+  }
+
   @Get('subscriber-property-top')
   @HttpCode(HttpStatus.OK)
   async getAllSubscriberUserPropertyTop(@Req() req: Request) {
