@@ -17,7 +17,7 @@ export class PropertyService {
     private readonly propertyModel: mongoose.Model<Property>,
     @InjectModel(User.name)
     private readonly userModel: mongoose.Model<User>,
-  ) { }
+  ) {}
 
   async createProperty(
     userId: string,
@@ -201,7 +201,7 @@ export class PropertyService {
   }
 
   async getSingleProperty(id: string) {
-    const property = await this.propertyModel.findById(id);
+    const property = await this.propertyModel.findById(id).populate('createBy');
     if (!property) throw new HttpException('Property not found', 404);
 
     return property;
