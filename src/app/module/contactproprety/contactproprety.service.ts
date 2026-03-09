@@ -81,12 +81,7 @@ export class ContactpropretyService {
     const sender = await this.userModel.findById(senderId);
     if (!sender) throw new HttpException('Sender not found', 404);
 
-    const role =
-      sender.role === 'agent'
-        ? 'agent'
-        : sender.role === 'vendor'
-          ? 'vendor'
-          : 'user';
+    const role = sender.role === 'agent' ? 'agent' : 'user';
 
     await this.contactPropertyModel.findByIdAndUpdate(dto.contactId, {
       $push: {
@@ -108,7 +103,7 @@ export class ContactpropretyService {
     if (!chat) throw new HttpException('Conversation not found', 404);
     return chat;
   }
-
+  //agent get all leads
   async getMyAllmyLeads(
     userId: string,
     params: IFilterParams,
@@ -169,7 +164,7 @@ export class ContactpropretyService {
       },
     };
   }
-
+  //agent view single lead details
   async getsingleLead(contactId: string) {
     const contact = await this.contactPropertyModel
       .findById(contactId)
@@ -193,6 +188,14 @@ export class ContactpropretyService {
     if (!contact) {
       throw new HttpException('Contact not found', 404);
     }
+
+    await this.contactPropertyModel.findByIdAndUpdate(
+      contactId,
+      {
+        status: 'viewed',
+      },
+      { new: true },
+    );
 
     return contact;
   }
@@ -279,7 +282,10 @@ export class ContactpropretyService {
       .populate('userId', 'firstName lastName email profileImage role')
       .populate('propertyId', 'title location price status images')
       .populate('propertyOwnerId', 'firstName lastName email profileImage role')
-      .populate('messages.senderId', 'firstName lastName email profileImage role');
+      .populate(
+        'messages.senderId',
+        'firstName lastName email profileImage role',
+      );
     const total =
       await this.contactPropertyModel.countDocuments(whereConditions);
 
