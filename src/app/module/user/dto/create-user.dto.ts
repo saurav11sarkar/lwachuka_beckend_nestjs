@@ -83,4 +83,15 @@ export class CreateUserDto {
   @IsEnum(['active', 'block', 'pending'])
   @IsOptional()
   status?: string;
+
+  @IsOptional()
+  @IsString()
+  expertise?: string[];
+
+  @IsOptional()
+  @IsString()
+  serviceAreas?: string[];
+
+  @IsOptional()
+  experience?: number;
 }

@@ -75,6 +75,15 @@ export class User {
 
   @Prop()
   subscriptionEndDate: Date;
+
+  @Prop()
+  expertise: string[];
+
+  @Prop()
+  serviceAreas: string[];
+
+  @Prop()
+  experience: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
