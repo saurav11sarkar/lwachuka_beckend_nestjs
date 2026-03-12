@@ -31,9 +31,11 @@ export class CreateUserDto {
   @IsStrongPassword()
   password: string;
 
-  @ApiPropertyOptional({ example: 'https://cdn.example.com/photo.jpg' })
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+  })
   @IsOptional()
-  @IsString()
   profileImage?: string;
 
   @ApiPropertyOptional({
