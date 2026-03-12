@@ -223,14 +223,15 @@ export class UserService {
   }
 
   async getSingleUser(id: string) {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const user = await this.userModel.findById(id)
+    if(!user){
       throw new HttpException('User not found', 404);
     }
 
     const [result] = await this.userModel.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(id),
+          _id: user._id,
         },
       },
       {
