@@ -11,7 +11,14 @@ import { PaymentService } from './payment.service';
 import pick from 'src/app/helper/pick';
 import type { Request } from 'express';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
@@ -19,6 +26,8 @@ export class PaymentController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get all payments' })
   async getAllPayments(@Req() req: Request) {
     const query = req.query;
     const filters = pick(query, [
@@ -39,6 +48,8 @@ export class PaymentController {
   @Get('my')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('vendor', 'agent'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my payments' })
   async getMyPayments(@Req() req: Request) {
     const query = req.query;
     const filters = pick(query, [
@@ -63,6 +74,8 @@ export class PaymentController {
   @Get('payment-overview')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get payment overview' })
   async paymentManagemant() {
     const result = await this.paymentService.paymentManagemant();
     return {
@@ -73,6 +86,8 @@ export class PaymentController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single payment by id' })
+  @ApiParam({ name: 'id', description: 'Payment id' })
   async getSinglePayment(@Param('id') id: string) {
     const result = await this.paymentService.getSinglePayment(id);
     return {

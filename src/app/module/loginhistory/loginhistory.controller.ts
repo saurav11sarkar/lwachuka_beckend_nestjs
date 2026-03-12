@@ -12,7 +12,14 @@ import { LoginhistoryService } from './loginhistory.service';
 import type { Request } from 'express';
 import pick from 'src/app/helper/pick';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('loginhistory')
 @Controller('loginhistory')
 export class LoginhistoryController {
   constructor(private readonly loginhistoryService: LoginhistoryService) {}
@@ -20,6 +27,8 @@ export class LoginhistoryController {
   @Get()
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get all login history logs' })
   async getAllAduditLog(@Req() req: Request) {
     const filters = pick(req.query, ['searchTerm', 'status']);
     const options = pick(req.query, [
@@ -45,6 +54,8 @@ export class LoginhistoryController {
   @Get('overview')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get login history overview' })
   async overViewAuditlog() {
     const result = await this.loginhistoryService.overViewAuditlog();
     return {
@@ -55,6 +66,8 @@ export class LoginhistoryController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single login history log by id' })
+  @ApiParam({ name: 'id', description: 'Audit log id' })
   async getSingleAduditLog(@Param('id') id: string) {
     const result = await this.loginhistoryService.getSingleAuditLog(id);
 
@@ -67,6 +80,9 @@ export class LoginhistoryController {
   @Delete(':id')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete login history log by id' })
+  @ApiParam({ name: 'id', description: 'Audit log id' })
   async deleteAduitLog(@Param('id') id: string) {
     const result = await this.loginhistoryService.deleteAuditLog(id);
 

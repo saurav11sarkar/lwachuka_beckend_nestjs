@@ -9,7 +9,9 @@ import {
 import { AdvertisementmanagementService } from './advertisementmanagement.service';
 import { CreateAdvertisementmanagementDto } from './dto/create-advertisementmanagement.dto';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('advertisement-management')
 @Controller('advertise-mentmanagement')
 export class AdvertisementmanagementController {
   constructor(
@@ -19,6 +21,8 @@ export class AdvertisementmanagementController {
   @Post()
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Create advertisement management record' })
   async createAdvertisementmanagement(
     @Body() createAdvertisementmanagementDto: CreateAdvertisementmanagementDto,
   ) {

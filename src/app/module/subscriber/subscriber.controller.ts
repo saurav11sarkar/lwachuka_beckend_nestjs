@@ -17,7 +17,15 @@ import { UpdateSubscriberDto } from './dto/update-subscriber.dto';
 import pick from 'src/app/helper/pick';
 import type { Request } from 'express';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('subscriber')
 @Controller('subscriber')
 export class SubscriberController {
   constructor(private readonly subscriberService: SubscriberService) {}
@@ -25,6 +33,8 @@ export class SubscriberController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Create subscriber plan' })
   async createSubscriber(@Body() createSubscriberDto: CreateSubscriberDto) {
     const result = await this.subscriberService.create(createSubscriberDto);
     return result;
@@ -32,6 +42,7 @@ export class SubscriberController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all subscriber plans' })
   async getAllSubscribers(@Req() req: Request) {
     const query = req.query;
     const filters = pick(query, [
@@ -54,6 +65,8 @@ export class SubscriberController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single subscriber plan by id' })
+  @ApiParam({ name: 'id', description: 'Subscriber plan id' })
   async getSingleSubscriber(@Param('id') id: string) {
     const result = await this.subscriberService.getSingleSubscriber(id);
     return {
@@ -65,6 +78,9 @@ export class SubscriberController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update subscriber plan by id' })
+  @ApiParam({ name: 'id', description: 'Subscriber plan id' })
   async updateSubscriber(
     @Param('id') id: string,
     @Body() updateSubscriberDto: UpdateSubscriberDto,
@@ -82,6 +98,9 @@ export class SubscriberController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete subscriber plan by id' })
+  @ApiParam({ name: 'id', description: 'Subscriber plan id' })
   async deleteSubscriber(@Param('id') id: string) {
     const result = await this.subscriberService.deleteSubscriber(id);
     return {
@@ -93,6 +112,9 @@ export class SubscriberController {
   @Post('pad-listing/:id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('user', 'vendor'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Pay listing with saved flow' })
+  @ApiParam({ name: 'id', description: 'Subscriber plan id' })
   async padListing(@Req() req: Request, @Param('id') id: string) {
     const result = await this.subscriberService.padListing(req.user!.id, id);
     return {
@@ -104,6 +126,18 @@ export class SubscriberController {
   @Post('pad-listing-mpesa/:id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('user', 'vendor', 'agent'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Initiate M-Pesa listing payment' })
+  @ApiParam({ name: 'id', description: 'Subscriber plan id' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['phoneNumber'],
+      properties: {
+        phoneNumber: { type: 'string', example: '254712345678' },
+      },
+    },
+  })
   async padListingMpesa(
     @Req() req: Request,
     @Param('id') id: string,

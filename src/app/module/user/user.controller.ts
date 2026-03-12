@@ -21,7 +21,15 @@ import { AuthGuard } from 'src/app/middlewares/auth.guard';
 import type { Request } from 'express';
 import pick from 'src/app/helper/pick';
 import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -30,6 +38,9 @@ export class UserController {
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('profileImage', fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Create a new user by admin' })
   async createUser(
     @Body() createUserDto: CreateUserDto,
     @UploadedFile() file?: Express.Multer.File,
@@ -45,6 +56,7 @@ export class UserController {
   @Get('all-users')
   // @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all users' })
   async findAllUsers(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -70,6 +82,8 @@ export class UserController {
   @Get('profile')
   @UseGuards(AuthGuard('user', 'agent', 'vendor', 'admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my profile' })
   async findProfile(@Req() req: Request) {
     const result = await this.userService.getProfile(req.user!.id);
     return {
@@ -82,6 +96,9 @@ export class UserController {
   @UseGuards(AuthGuard('user', 'agent', 'vendor', 'admin'))
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('profileImage', fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Update my profile' })
   async updateProfile(
     @Req() req: Request,
     @Body() updateUserDto: UpdateUserDto,
@@ -100,6 +117,8 @@ export class UserController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single user by id' })
+  @ApiParam({ name: 'id', description: 'User id' })
   async findSingleUser(@Param('id') id: string) {
     const result = await this.userService.getSingleUser(id);
     return {
@@ -112,6 +131,10 @@ export class UserController {
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('profileImage', fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Update user by id' })
+  @ApiParam({ name: 'id', description: 'User id' })
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -131,6 +154,9 @@ export class UserController {
   @Delete(':id')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete user by id' })
+  @ApiParam({ name: 'id', description: 'User id' })
   async deleteUser(@Param('id') id: string) {
     const result = await this.userService.deleteUser(id);
     return {

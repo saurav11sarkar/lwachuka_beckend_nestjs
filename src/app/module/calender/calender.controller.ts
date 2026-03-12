@@ -17,7 +17,14 @@ import { AuthGuard } from 'src/app/middlewares/auth.guard';
 import type { Request } from 'express';
 import pick from 'src/app/helper/pick';
 import { UpdateCalenderDto } from './dto/update-calender.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('calender')
 @Controller('calender')
 export class CalenderController {
   constructor(private readonly calenderService: CalenderService) {}
@@ -25,6 +32,9 @@ export class CalenderController {
   @Post(':propertyId')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Book site visit for a property' })
+  @ApiParam({ name: 'propertyId', description: 'Property id' })
   async createCalender(
     @Req() req: Request,
     @Body() createCalenderDto: CreateCalenderDto,
@@ -46,6 +56,8 @@ export class CalenderController {
   @Get('my-bookings')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my bookings' })
   async getMyBookCalender(@Req() req: Request) {
     const userId = req.user!.id;
     const filters = pick(req.query, [
@@ -74,6 +86,8 @@ export class CalenderController {
   @Get('my-agent-bookings')
   @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my agent bookings' })
   async getMyAgentBookCalender(@Req() req: Request) {
     const userId = req.user!.id;
     const filters = pick(req.query, [
@@ -101,6 +115,8 @@ export class CalenderController {
 
   @Get('visit-stats')
   @UseGuards(AuthGuard('agent', 'user'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get visit statistics' })
   async getVisitStats(@Req() req: Request) {
     const userId = req.user!.id;
     const role = req.user!.role;
@@ -116,6 +132,8 @@ export class CalenderController {
   @Get('upcoming-visits')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get upcoming visits' })
   async getAllUpcomingVisits(@Req() req: Request) {
     const agentId = req.user!.id;
 
@@ -130,6 +148,9 @@ export class CalenderController {
   @Put('status/:id')
   @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update visit status' })
+  @ApiParam({ name: 'id', description: 'Visit id' })
   async updateVisitStatus(
     @Param('id') id: string,
     @Body() body: { status: string },
@@ -148,6 +169,9 @@ export class CalenderController {
   @Put(':id')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update my booking by id' })
+  @ApiParam({ name: 'id', description: 'Booking id' })
   async updateCalender(
     @Req() req: Request,
     @Body() updateCalenderDto: UpdateCalenderDto,
@@ -168,6 +192,8 @@ export class CalenderController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single booking by id' })
+  @ApiParam({ name: 'id', description: 'Booking id' })
   async getMyCalenderById(@Param('id') id: string) {
     const result = await this.calenderService.getMyCalenderById(id);
 
@@ -180,6 +206,9 @@ export class CalenderController {
   @Delete(':id')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete booking by id' })
+  @ApiParam({ name: 'id', description: 'Booking id' })
   async deleteCalender(@Req() req: Request, @Param('id') id: string) {
     const userId = req.user!.id;
     const result = await this.calenderService.deleteCalender(userId, id);

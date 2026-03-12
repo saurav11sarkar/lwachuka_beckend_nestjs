@@ -10,6 +10,10 @@ import {
 } from '../property/entities/property.entity';
 import { IFilterParams } from 'src/app/helper/pick';
 import paginationHelper, { IOptions } from 'src/app/helper/pagenation';
+import {
+  RecentActivity,
+  RecentActivityDocument,
+} from '../recent-activity/entities/recent-activity.entity';
 
 @Injectable()
 export class BookmarkService {
@@ -20,6 +24,8 @@ export class BookmarkService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(Property.name)
     private readonly propertyModel: Model<PropertyDocument>,
+    @InjectModel(RecentActivity.name)
+    private readonly recentActivityModel: Model<RecentActivityDocument>,
   ) {}
 
   async createBookmark(userId: string, propertyId: string) {
@@ -40,6 +46,13 @@ export class BookmarkService {
 
     property.bookmarkUser.push(user._id);
     await property.save();
+
+    await this.recentActivityModel.create({
+      user: user._id,
+      property: property._id,
+      activityType: 'saved_property',
+      description: `You saved the property ${property.title} to your bookmarks.`,
+    });
 
     return result;
   }
@@ -126,6 +139,13 @@ export class BookmarkService {
       (id) => id.toString() !== user._id.toString(),
     );
     await property.save();
+
+    await this.recentActivityModel.create({
+      user: user._id,
+      property: property._id,
+      activityType: 'remove_saved_property',
+      description: `You removed the property ${property.title} from your bookmarks.`,
+    });
 
     return result;
   }

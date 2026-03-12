@@ -21,15 +21,26 @@ import { fileUpload } from 'src/app/helper/fileUploder';
 import type { Request } from 'express';
 import pick from 'src/app/helper/pick';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('property')
 @Controller('property')
 export class PropertyController {
-  constructor(private readonly propertyService: PropertyService) { }
+  constructor(private readonly propertyService: PropertyService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard('agent', 'admin'))
   @UseInterceptors(FilesInterceptor('images', 10, fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Create property' })
   async createProperty(
     @Req() req: Request,
     @Body() createPropertyDto: CreatePropertyDto,
@@ -50,6 +61,7 @@ export class PropertyController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all properties' })
   async getAllProperties(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -82,6 +94,7 @@ export class PropertyController {
 
   @Get('get-all-pad-property-listing')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all paid property listings' })
   async getAllPadPropertyListing(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -117,6 +130,7 @@ export class PropertyController {
 
   @Get('subscriber-property-top')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get top subscriber properties' })
   async getAllSubscriberUserPropertyTop(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -152,6 +166,8 @@ export class PropertyController {
   @Get('my-property')
   @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my properties' })
   async getMyPropertys(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -187,6 +203,8 @@ export class PropertyController {
 
   @Get('agent/:agentId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get properties by agent id' })
+  @ApiParam({ name: 'agentId', description: 'Agent id' })
   async agentProperty(@Req() req: Request, @Param('agentId') agentId: string) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -223,6 +241,9 @@ export class PropertyController {
   @Put('status/:propertyId')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Approve or reject property' })
+  @ApiParam({ name: 'propertyId', description: 'Property id' })
   async approvedOrReject(
     @Param('propertyId') propertyId: string,
     @Body() updateStatus: { status: string },
@@ -239,6 +260,8 @@ export class PropertyController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single property by id' })
+  @ApiParam({ name: 'id', description: 'Property id' })
   async getSingleProperty(@Param('id') id: string) {
     const result = await this.propertyService.getSingleProperty(id);
 
@@ -252,6 +275,10 @@ export class PropertyController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('agent', 'admin'))
   @UseInterceptors(FilesInterceptor('images', 10, fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Update property by id' })
+  @ApiParam({ name: 'id', description: 'Property id' })
   async updateProperty(
     @Req() req: Request,
     @Param('id') id: string,
@@ -275,6 +302,9 @@ export class PropertyController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('agent', 'admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete property by id' })
+  @ApiParam({ name: 'id', description: 'Property id' })
   async deleteProperty(@Req() req: Request, @Param('id') id: string) {
     const userId = req.user!.id;
     const result = await this.propertyService.deleteProperty(userId, id);
