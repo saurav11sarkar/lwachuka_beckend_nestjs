@@ -46,7 +46,5 @@ export class AppService {
         </body>
       </html>
     `;
-
-    // return 'Server is running';
   }
 }
