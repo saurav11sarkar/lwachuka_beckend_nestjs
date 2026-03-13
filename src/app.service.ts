@@ -40,7 +40,7 @@ export class AppService {
         </head>
         <body>
           <div class="box">
-            <h1>✅ Server is running</h1>
+            <h1>✅ Server is running!</h1>
             <p>NestJS backend is ready</p>
           </div>
         </body>
