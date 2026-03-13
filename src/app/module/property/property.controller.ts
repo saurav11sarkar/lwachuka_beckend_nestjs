@@ -23,6 +23,7 @@ import pick from 'src/app/helper/pick';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiOperation,
   ApiParam,
@@ -41,6 +42,7 @@ export class PropertyController {
   @ApiBearerAuth('access-token')
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create property' })
+  @ApiBody({ type: CreatePropertyDto })
   async createProperty(
     @Req() req: Request,
     @Body() createPropertyDto: CreatePropertyDto,
@@ -277,6 +279,7 @@ export class PropertyController {
   @UseInterceptors(FilesInterceptor('images', 10, fileUpload.uploadConfig))
   @ApiBearerAuth('access-token')
   @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdatePropertyDto })
   @ApiOperation({ summary: 'Update property by id' })
   @ApiParam({ name: 'id', description: 'Property id' })
   async updateProperty(

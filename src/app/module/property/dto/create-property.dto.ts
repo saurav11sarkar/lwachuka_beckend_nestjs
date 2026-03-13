@@ -7,6 +7,7 @@ import {
   IsString,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePropertyDto {
   @IsString()
@@ -127,7 +128,13 @@ export class CreatePropertyDto {
     return [];
   })
   @IsArray()
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    required: false,
+  })
   images?: string[];
+  // images?: string[];
 
   @IsOptional()
   @IsString()
@@ -151,7 +158,7 @@ export class CreatePropertyDto {
   originalPrice?: number;
 
   @IsOptional()
-  @Transform(({ value }) => value ? new Date(value).toISOString() : undefined)
+  @Transform(({ value }) => (value ? new Date(value).toISOString() : undefined))
   @IsDateString()
   handoverDate?: Date;
 
