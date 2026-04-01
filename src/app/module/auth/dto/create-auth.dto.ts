@@ -17,7 +17,7 @@ export class CreateAuthDto {
   @IsNotEmpty({ message: 'Email is Requried' })
   email: string;
 
-  @IsStrongPassword()
+  @IsString()
   @IsNotEmpty({ message: 'Password is Requried' })
   password: string;
 
