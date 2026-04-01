@@ -90,6 +90,10 @@ export class AuthService {
       throw new HttpException('Password incorrect', 400);
     }
 
+    if (user.status === 'pending') {
+      throw new HttpException('Your account is pending approval', 400);
+    }
+
     if (user.status === 'block') {
       await this.loginhistoryModel.create({
         userId: user._id,

@@ -19,6 +19,7 @@ import { MpesaModule } from './app/module/mpesa/mpesa.module';
 import { DashboardModule } from './app/module/dashboard/dashboard.module';
 import { LoginhistoryModule } from './app/module/loginhistory/loginhistory.module';
 import { RecentActivityModule } from './app/module/recent-activity/recent-activity.module';
+import { FaqModule } from './app/module/faq/faq.module';
 import config from './app/config';
 
 @Module({
@@ -41,6 +42,7 @@ import config from './app/config';
     DashboardModule,
     LoginhistoryModule,
     RecentActivityModule,
+    FaqModule,
   ],
   controllers: [AppController],
   providers: [AppService],
