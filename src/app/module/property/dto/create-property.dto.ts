@@ -24,15 +24,18 @@ export class CreatePropertyDto {
     'Condo',
     'Bungalow',
     'Cottage',
+    'Land',
   ])
   propertyType: string;
 
   @Type(() => Number)
   @IsNumber()
+  @IsOptional()
   bedrooms: number;
 
   @Type(() => Number)
   @IsNumber()
+  @IsOptional()
   bathrooms: number;
 
   @Type(() => Number)
@@ -44,6 +47,11 @@ export class CreatePropertyDto {
   @IsNumber()
   @IsOptional()
   landArea?: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  acres?: number;
 
   @IsOptional()
   @Type(() => Number)

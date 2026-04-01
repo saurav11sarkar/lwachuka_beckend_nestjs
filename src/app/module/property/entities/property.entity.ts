@@ -20,6 +20,7 @@ export class Property {
       'Condo',
       'Bungalow',
       'Cottage',
+      'Land',
     ],
     required: true,
   })
@@ -30,6 +31,9 @@ export class Property {
 
   @Prop()
   bathrooms: number;
+
+  @Prop()
+  acres: number;
 
   @Prop()
   area: number;
