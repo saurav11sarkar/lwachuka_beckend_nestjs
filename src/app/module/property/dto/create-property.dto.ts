@@ -37,7 +37,13 @@ export class CreatePropertyDto {
 
   @Type(() => Number)
   @IsNumber()
+  @IsOptional()
   area: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  landArea?: number;
 
   @IsOptional()
   @Type(() => Number)

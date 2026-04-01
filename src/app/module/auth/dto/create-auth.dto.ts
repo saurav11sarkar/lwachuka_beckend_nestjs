@@ -5,7 +5,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsStrongPassword,
 } from 'class-validator';
 
 export class CreateAuthDto {
@@ -17,7 +16,7 @@ export class CreateAuthDto {
   @IsNotEmpty({ message: 'Email is Requried' })
   email: string;
 
-  @IsStrongPassword()
+  @IsString()
   @IsNotEmpty({ message: 'Password is Requried' })
   password: string;
 

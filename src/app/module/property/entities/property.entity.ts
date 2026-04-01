@@ -25,14 +25,17 @@ export class Property {
   })
   propertyType: string;
 
-  @Prop({ required: true })
+  @Prop()
   bedrooms: number;
 
-  @Prop({ required: true })
+  @Prop()
   bathrooms: number;
 
-  @Prop({ required: true })
+  @Prop()
   area: number;
+
+  @Prop()
+  landArea: number;
 
   @Prop()
   builtUp: number;
@@ -41,17 +44,16 @@ export class Property {
   plot: number;
 
   @Prop()
-  keyBathrooms:string;
+  keyBathrooms: string;
 
   @Prop()
-  keyBedRooms:string;
+  keyBedRooms: string;
 
   @Prop()
-  keyBuiltUp:number;
+  keyBuiltUp: number;
 
   @Prop()
-  keyKitchenType:string;
-
+  keyKitchenType: string;
 
   @Prop()
   keyParking: string;
