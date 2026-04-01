@@ -22,7 +22,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileUpload } from 'src/app/helper/fileUploder';
 import pick from 'src/app/helper/pick';
 import { UpdateAdvertisementDto } from './dto/update-advertisement.dto';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('advertisement')
 @Controller('advertisement')
 export class AdvertisementController {
   constructor(private readonly advertisementService: AdvertisementService) {}
@@ -31,6 +39,9 @@ export class AdvertisementController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard('vendor', 'admin'))
   @UseInterceptors(FileInterceptor('uploadMedia', fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Create advertisement' })
   async createAdvertisement(
     @Req() req: Request,
     @Body() createAdvertisementDto: CreateAdvertisementDto,
@@ -47,6 +58,7 @@ export class AdvertisementController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get all advertisements' })
   async getAllAdvertisements(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -71,6 +83,7 @@ export class AdvertisementController {
 
   @Get('my-advertisement')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get my advertisements' })
   async getMyAdvertisement(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -96,6 +109,8 @@ export class AdvertisementController {
 
   @Get('vendor/:vendorId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get advertisements by vendor id' })
+  @ApiParam({ name: 'vendorId', description: 'Vendor id' })
   async getVendorAdvertisement(
     @Param('vendorId') vendorId: string,
     @Req() req: Request,
@@ -124,6 +139,8 @@ export class AdvertisementController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single advertisement by id' })
+  @ApiParam({ name: 'id', description: 'Advertisement id' })
   async getAdvertisementById(@Param('id') id: string) {
     const result = await this.advertisementService.getAdvertisementById(id);
     return {
@@ -136,6 +153,10 @@ export class AdvertisementController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('vendor', 'admin'))
   @UseInterceptors(FileInterceptor('uploadMedia', fileUpload.uploadConfig))
+  @ApiBearerAuth('access-token')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Update advertisement by id' })
+  @ApiParam({ name: 'id', description: 'Advertisement id' })
   async updateMyAdvertisement(
     @Req() req: Request,
     @Param('id') id: string,
@@ -160,6 +181,9 @@ export class AdvertisementController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('vendor', 'admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete advertisement by id' })
+  @ApiParam({ name: 'id', description: 'Advertisement id' })
   async deleteMyAdvertisement(@Req() req: Request, @Param('id') id: string) {
     const userId = req.user!.id;
 

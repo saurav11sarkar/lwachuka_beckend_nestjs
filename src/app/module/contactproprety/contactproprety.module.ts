@@ -8,6 +8,10 @@ import {
 } from './entities/contactproprety.entity';
 import { Property, PropertySchema } from '../property/entities/property.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
+import {
+  RecentActivity,
+  RecentActivitySchema,
+} from '../recent-activity/entities/recent-activity.entity';
 
 @Module({
   imports: [
@@ -15,6 +19,7 @@ import { User, UserSchema } from '../user/entities/user.entity';
       { name: ContactProperty.name, schema: ContactPropertySchema },
       { name: Property.name, schema: PropertySchema },
       { name: User.name, schema: UserSchema },
+      { name: RecentActivity.name, schema: RecentActivitySchema },
     ]),
   ],
   controllers: [ContactpropretyController],

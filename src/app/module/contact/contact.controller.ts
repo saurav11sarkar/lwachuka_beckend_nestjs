@@ -17,13 +17,21 @@ import pick from 'src/app/helper/pick';
 import type { Request } from 'express';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('contact')
 @Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Create contact message' })
   async createContact(@Body() createContactDto: CreateContactDto) {
     const result = await this.contactService.createContact(createContactDto);
 
@@ -36,6 +44,8 @@ export class ContactController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get all contact messages' })
   async getAllContact(@Req() req: Request) {
     const filters = pick(req.query, [
       'searchTerm',
@@ -57,6 +67,8 @@ export class ContactController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   // @UseGuards(AuthGuard('admin'))
+  @ApiOperation({ summary: 'Get single contact message by id' })
+  @ApiParam({ name: 'id', description: 'Contact id' })
   async getSingleContact(@Param('id') id: string) {
     const result = await this.contactService.getSingleContact(id);
     return {
@@ -68,6 +80,9 @@ export class ContactController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Update contact message by id' })
+  @ApiParam({ name: 'id', description: 'Contact id' })
   async updateContact(
     @Param('id') id: string,
     @Body() payload: UpdateContactDto,
@@ -82,6 +97,9 @@ export class ContactController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('admin'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Delete contact message by id' })
+  @ApiParam({ name: 'id', description: 'Contact id' })
   async deleteContact(@Param('id') id: string) {
     const result = await this.contactService.deleteContact(id);
     return {

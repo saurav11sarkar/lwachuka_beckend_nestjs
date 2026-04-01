@@ -13,7 +13,9 @@ import { MpesaService } from './mpesa.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { User } from '../user/entities/user.entity';
 import { Subscriber } from '../subscriber/entities/subscriber.entity';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('mpesa')
 @Controller('mpesa')
 export class MpesaController {
   private readonly logger = new Logger(MpesaController.name);
@@ -41,6 +43,7 @@ export class MpesaController {
   // In production: Safaricom calls this automatically after user enters PIN
   @Post('callback')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Handle M-Pesa callback' })
   async callback(@Body() body: any) {
     // ✅ Always respond OK immediately (Safaricom requirement — must reply within 5s)
     const parsed = this.mpesaService.parseStkCallback(body);

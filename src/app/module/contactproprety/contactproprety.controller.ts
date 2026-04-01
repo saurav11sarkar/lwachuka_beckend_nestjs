@@ -15,7 +15,14 @@ import { SendMessageDto } from './dto/send-message.dto';
 import type { Request } from 'express';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
 import pick from 'src/app/helper/pick';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('contact-property')
 @Controller('contact-property')
 export class ContactpropretyController {
   constructor(
@@ -26,6 +33,8 @@ export class ContactpropretyController {
   @Post('send-message')
   @UseGuards(AuthGuard('user', 'agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Send message in inquiry thread' })
   async sendMessage(@Req() req: Request, @Body() dto: SendMessageDto) {
     const senderId = req.user!.id;
     const result = await this.contactpropretyService.sendMessage(senderId, dto);
@@ -39,6 +48,8 @@ export class ContactpropretyController {
   @Get('my-leads')
   @UseGuards(AuthGuard('agent', 'user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my leads' })
   async getMyAllmyLeads(@Req() req: Request) {
     const userId = req.user!.id;
 
@@ -62,6 +73,8 @@ export class ContactpropretyController {
   // @Get('my-inquey')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get my inquiries' })
   async agentProperty(@Req() req: Request) {
     const filters = pick(req.query, ['searchTerm', 'status']);
     const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
@@ -81,6 +94,8 @@ export class ContactpropretyController {
   @Get('inquiry-history')
   @UseGuards(AuthGuard('user', 'agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get inquiry history summary' })
   async inquiryHistory(@Req() req: Request) {
     const userId = req.user!.id;
     const role = req.user!.role;
@@ -99,6 +114,8 @@ export class ContactpropretyController {
   @Get('lead/:id')
   // @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get single lead by id' })
+  @ApiParam({ name: 'id', description: 'Lead id' })
   async getsingleLead(@Param('id') id: string) {
     const result = await this.contactpropretyService.getsingleLead(id);
 
@@ -112,6 +129,9 @@ export class ContactpropretyController {
   @Post(':propertyId')
   @UseGuards(AuthGuard('user', 'vendor', 'agent'))
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Create property inquiry' })
+  @ApiParam({ name: 'propertyId', description: 'Property id' })
   async createContactProperty(
     @Req() req: Request,
     @Body() dto: CreateContactpropretyDto,
@@ -134,6 +154,8 @@ export class ContactpropretyController {
   // Get full chat
   @Get(':contactId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get full inquiry chat by contact id' })
+  @ApiParam({ name: 'contactId', description: 'Contact thread id' })
   async getFullChat(@Param('contactId') contactId: string) {
     return this.contactpropretyService.getFullChat(contactId);
   }

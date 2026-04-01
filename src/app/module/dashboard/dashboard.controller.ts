@@ -10,7 +10,9 @@ import {
 import { DashboardService } from './dashboard.service';
 import { AuthGuard } from 'src/app/middlewares/auth.guard';
 import type { Request } from 'express';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('dashboard')
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
@@ -18,6 +20,8 @@ export class DashboardController {
   @Get('/admin-overview')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get admin dashboard overview' })
   async adminDashboradOverviw() {
     const result = await this.dashboardService.adminDashboradOverviw();
 
@@ -30,6 +34,8 @@ export class DashboardController {
   @Get('analytics-reports')
   @UseGuards(AuthGuard('admin'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get analytics reports' })
   async analyticsReports() {
     const result = await this.dashboardService.analyticsReports();
 
@@ -42,6 +48,9 @@ export class DashboardController {
   @Get('agent-overview')
   @UseGuards(AuthGuard('agent'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get agent dashboard overview' })
+  @ApiQuery({ name: 'year', required: false, type: String, example: '2026' })
   async agentDashboardOverview(
     @Req() req: Request,
     @Query('year') year?: string,
@@ -60,6 +69,8 @@ export class DashboardController {
   @Get('user-overview')
   @UseGuards(AuthGuard('user'))
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get user dashboard overview' })
   async userDashboardOverview(@Req() req: Request) {
     const result = await this.dashboardService.userDashboardOverview(
       req.user!.id,

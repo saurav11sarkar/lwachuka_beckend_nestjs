@@ -1,0 +1,35 @@
+services:
+  app-dev:
+    image: saurav11sarkardev/lwachuka:dev
+    env_file:
+      - .env
+    container_name: lwachuka-dev
+    build:
+      context: .
+      dockerfile: Dockerfile # এটা add করো
+      target: development
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run start:dev
+    profiles: ['dev']
+
+  app-prod:
+    image: saurav11sarkardev/lwachuka:prod
+    env_file:
+      - .env
+    container_name: lwachuka-prod
+    build:
+      context: .
+      dockerfile: Dockerfile # এটা add করো
+      target: production
+    ports:
+      - '5000:5000'
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    profiles: ['prod']

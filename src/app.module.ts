@@ -18,6 +18,7 @@ import { AdvertisementModule } from './app/module/advertisement/advertisement.mo
 import { MpesaModule } from './app/module/mpesa/mpesa.module';
 import { DashboardModule } from './app/module/dashboard/dashboard.module';
 import { LoginhistoryModule } from './app/module/loginhistory/loginhistory.module';
+import { RecentActivityModule } from './app/module/recent-activity/recent-activity.module';
 import config from './app/config';
 
 @Module({
@@ -39,6 +40,7 @@ import config from './app/config';
     MpesaModule,
     DashboardModule,
     LoginhistoryModule,
+    RecentActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

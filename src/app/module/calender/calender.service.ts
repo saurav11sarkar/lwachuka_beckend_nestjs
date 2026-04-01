@@ -11,6 +11,10 @@ import { User, UserDocument } from '../user/entities/user.entity';
 import { IFilterParams } from 'src/app/helper/pick';
 import paginationHelper, { IOptions } from 'src/app/helper/pagenation';
 import { UpdateCalenderDto } from './dto/update-calender.dto';
+import {
+  RecentActivity,
+  RecentActivityDocument,
+} from '../recent-activity/entities/recent-activity.entity';
 
 @Injectable()
 export class CalenderService {
@@ -23,6 +27,9 @@ export class CalenderService {
 
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+
+    @InjectModel(RecentActivity.name)
+    private recentActivityModel: Model<RecentActivityDocument>,
   ) {}
 
   private async syncExpiredApprovedVisits() {
@@ -55,6 +62,14 @@ export class CalenderService {
       user: user._id,
       property: property._id,
     });
+
+    await this.recentActivityModel.create({
+      user: user._id,
+      property: property._id,
+      activityType: 'created_calender',
+      description: `You created a calender for ${property.title}.`,
+    });
+
     return result;
   }
 

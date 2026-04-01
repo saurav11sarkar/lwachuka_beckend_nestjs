@@ -14,6 +14,10 @@ import { User, UserDocument } from '../user/entities/user.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import { IFilterParams } from 'src/app/helper/pick';
 import paginationHelper, { IOptions } from 'src/app/helper/pagenation';
+import {
+  RecentActivity,
+  RecentActivityDocument,
+} from '../recent-activity/entities/recent-activity.entity';
 
 @Injectable()
 export class ContactpropretyService {
@@ -26,6 +30,9 @@ export class ContactpropretyService {
 
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+
+    @InjectModel(RecentActivity.name)
+    private recentActivityModel: Model<RecentActivityDocument>,
   ) {}
 
   // User first contact
@@ -59,6 +66,13 @@ export class ContactpropretyService {
 
     property.listingUser.push(user._id);
     await property.save();
+
+    await this.recentActivityModel.create({
+      user: user._id,
+      property: property._id,
+      activityType: 'new_inquiry',
+      description: `You made an inquiry for the property ${property.title}.`,
+    });
 
     return contact;
   }

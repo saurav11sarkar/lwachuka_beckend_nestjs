@@ -5,6 +5,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CalenderSchema } from './entities/calender.entity';
 import { PropertySchema } from '../property/entities/property.entity';
 import { UserSchema } from '../user/entities/user.entity';
+import {
+  RecentActivity,
+  RecentActivitySchema,
+} from '../recent-activity/entities/recent-activity.entity';
 
 @Module({
   imports: [
@@ -12,6 +16,7 @@ import { UserSchema } from '../user/entities/user.entity';
       { name: 'Calender', schema: CalenderSchema },
       { name: 'Property', schema: PropertySchema },
       { name: 'User', schema: UserSchema },
+      { name: RecentActivity.name, schema: RecentActivitySchema },
     ]),
   ],
   controllers: [CalenderController],
